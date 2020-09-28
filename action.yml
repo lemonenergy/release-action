@@ -1,0 +1,25 @@
+name: 'version-bump-action'
+description: 'bump package.json version and commit it'
+
+inputs:
+  base-branch:
+    description: 'branch which release will be merged'
+    required: true
+    default: 'master'
+
+  head-branch:
+    description: 'branch to be bumped'
+    required: true
+    default: 'develop'
+
+  github-token:
+    description: 'github token with access to merge in head-branch'
+    required: true
+
+  initial-version:
+    description: 'initial version used if base-branch doesn`t have package.json'
+    default: '0.0.0'
+
+runs:
+  using: 'node12'
+  main: 'index.js'
