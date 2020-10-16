@@ -1,9 +1,10 @@
+const fs = require('fs')
+const semver = require('semver')
+const recommendedBump = require('recommended-bump')
 const core = require('@actions/core')
 const github = require('@actions/github')
-const recommendedBump = require('recommended-bump')
 const { exec } = require('@actions/exec')
-const semver = require('semver')
-const fs = require('fs')
+const { Octokit } = require('@octokit/rest')
 const EVENT = 'pull_request'
 
 const githubToken = core.getInput('github-token')
@@ -11,7 +12,7 @@ const actor = process.env.GITHUB_ACTOR
 const repository = process.env.GITHUB_REPOSITORY
 const remote = `https://${actor}:${githubToken}@github.com/${repository}.git`
 
-const octokit = new github.GitHub(githubToken)
+const octokit = new Octokit({ auth: githubToken })
 
 const checkEvent = (base, head) => {
   const { eventName, payload } = github.context
@@ -29,7 +30,7 @@ const getLastVersion = async (base, initial = '0.0.0') => {
   const { context } = github
 
   try {
-    const pkgFile = await octokit.repos.getContents({
+    const pkgFile = await octokit.repos.getContent({
       ...context.repo,
       ref: base,
       path: 'package.json',
@@ -68,13 +69,26 @@ const validateCommitMessage = message => {
   return commitRegex.test(header.trim())
 }
 
+const getPullRequestCommits = async parameters => {
+  const commits = []
+
+  for await (const response of octokit.paginate.iterator(
+    'GET /repos/:owner/:repo/pulls/:pull_number/commits',
+    parameters,
+  )) {
+    commits.push(...response.data)
+  }
+
+  return commits
+}
+
 const getRelease = async () => {
   const { context } = github
   const { payload } = context
 
   const pull_number = payload.number
 
-  const { data: commits } = await octokit.pulls.listCommits({
+  const commits = await getPullRequestCommits({
     ...context.repo,
     pull_number,
   })

@@ -1,6 +1,6 @@
 {
   "name": "release-action",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "main": "index.js",
   "license": "MIT",
   "repository": "git@github.com:lemonenergy/release-action.git",
@@ -9,6 +9,7 @@
     "@actions/core": "^1.2.6",
     "@actions/exec": "^1.0.4",
     "@actions/github": "1.1.x",
+    "@octokit/rest": "^18.0.6",
     "recommended-bump": "1.5.x",
     "semver": "6.3.x"
   },
