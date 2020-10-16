@@ -68,13 +68,26 @@ const validateCommitMessage = message => {
   return commitRegex.test(header.trim())
 }
 
+const getPullRequestCommits = async parameters => {
+  const commits = []
+
+  for await (const response of octokit.paginate.iterator(
+    'GET /repos/:owner/:repo/pulls/:pull_number/commits',
+    parameters,
+  )) {
+    commits.push(...response.data)
+  }
+
+  return commits
+}
+
 const getRelease = async () => {
   const { context } = github
   const { payload } = context
 
   const pull_number = payload.number
 
-  const { data: commits } = await octokit.pulls.listCommits({
+  const commits = await getPullRequestCommits({
     ...context.repo,
     pull_number,
   })
