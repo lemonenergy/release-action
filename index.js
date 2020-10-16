@@ -1,9 +1,10 @@
+const fs = require('fs')
+const semver = require('semver')
+const recommendedBump = require('recommended-bump')
 const core = require('@actions/core')
 const github = require('@actions/github')
-const recommendedBump = require('recommended-bump')
 const { exec } = require('@actions/exec')
-const semver = require('semver')
-const fs = require('fs')
+const { Octokit } = require('@octokit/rest')
 const EVENT = 'pull_request'
 
 const githubToken = core.getInput('github-token')
@@ -11,7 +12,7 @@ const actor = process.env.GITHUB_ACTOR
 const repository = process.env.GITHUB_REPOSITORY
 const remote = `https://${actor}:${githubToken}@github.com/${repository}.git`
 
-const octokit = new github.GitHub(githubToken)
+const octokit = new Octokit({ auth: githubToken })
 
 const checkEvent = (base, head) => {
   const { eventName, payload } = github.context
