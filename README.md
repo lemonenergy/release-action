@@ -31,7 +31,7 @@ initial version used if base-branch doesn't have package.json
 ## Example usage
 
 ```yml
-uses: lemonenergy/release-action
+uses: lemonenergy/release-action@master # or use a specific version lemonenergy/release-action@1.0.0
 with:
   github-token: ${{secrets.GITHUB_TOKEN}}
 ```
