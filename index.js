@@ -64,7 +64,8 @@ const validateCommitMessage = message => {
   if (typeof message !== 'string') return false
 
   const [header = message] = message.split('\n\n')
-  const commitRegex = /^(feat|fix|chore|refactor|style|test|docs)(?:\((.+)\))?: (.+)$/g
+  const commitRegex =
+    /^(feat|fix|chore|refactor|style|test|docs)(?:\((.+)\))?: (.+)$/g
 
   return commitRegex.test(header.trim())
 }

@@ -1,23 +1,23 @@
-name: 'version-bump-action'
-description: 'bump package.json version and commit it'
+name: 'release-action'
+description: 'Bumps package version and creates release.'
 
 inputs:
   base-branch:
-    description: 'branch which release will be merged'
+    description: 'Branch in which release will be merged'
     required: true
-    default: 'master'
+    default: 'main'
 
   head-branch:
-    description: 'branch to be bumped'
+    description: 'Branch to be released'
     required: true
     default: 'develop'
 
   github-token:
-    description: 'github token with access to merge in head-branch'
+    description: 'GitHub token with access to commit in head-branch'
     required: true
 
   initial-version:
-    description: 'initial version used if base-branch doesn`t have package.json'
+    description: "Initial version used if base-branch doesn't have package.json"
     default: '0.0.0'
 
 runs:
