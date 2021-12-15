@@ -20,6 +20,10 @@ inputs:
     description: "Initial version used if base-branch doesn't have package.json"
     default: '0.0.0'
 
+  path:
+    description: 'Path where the target package.json is located'
+    default: ''
+
 runs:
   using: 'node12'
   main: 'index.js'
