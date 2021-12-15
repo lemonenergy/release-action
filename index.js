@@ -103,10 +103,12 @@ const getRelease = async () => {
   return release
 }
 
-const bump = async (lastVersion, release, targetPath) => {
+const bump = async (lastVersion, release, targetPath = '') => {
   const version = semver.inc(lastVersion, release)
 
   if (targetPath) {
+    console.log(targetPath)
+    await exec(`ls`)
     await exec(`cd ${targetPath}`)
   }
 
