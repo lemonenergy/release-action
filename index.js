@@ -26,14 +26,14 @@ const checkEvent = (base, head) => {
   throw Error('Event not supported')
 }
 
-const getLastVersion = async (base, initial = '0.0.0') => {
+const getLastVersion = async (base, initial = '0.0.0', targetPath = '') => {
   const { context } = github
 
   try {
     const pkgFile = await octokit.repos.getContent({
       ...context.repo,
       ref: base,
-      path: 'package.json',
+      path: `${targetPath ? `${targetPath}/` : ''}package.json`,
     })
 
     const content = Buffer.from(pkgFile.data.content, 'base64')
@@ -103,13 +103,19 @@ const getRelease = async () => {
   return release
 }
 
-const bump = async (lastVersion, release) => {
+const bump = async (lastVersion, release, targetPath) => {
   const version = semver.inc(lastVersion, release)
+
+  if (targetPath) {
+    await exec(`cd ${targetPath}`)
+  }
 
   await exec(
     `npm version --new-version ${version} --allow-same-version -m "Release v%s"`,
   )
-  const file = fs.readFileSync('package.json')
+  const file = fs.readFileSync(
+    `${targetPath ? `${targetPath}/` : ''}package.json`,
+  )
   const { version: bumped } = JSON.parse(file.toString())
 
   return bumped
@@ -122,7 +128,7 @@ const configGit = async head => {
   await exec(`git checkout ${head}`)
 }
 
-const pushBumpedVersionAndTag = async (version, head) => {
+const pushBumpedVersionAndTag = async head => {
   await exec(`git push "${remote}" HEAD:${head}`)
   await exec(`git push -f --tags`)
 }
@@ -131,6 +137,7 @@ const run = async () => {
   const base = core.getInput('base-branch')
   const head = core.getInput('head-branch')
   const initialVersion = core.getInput('initial-version')
+  const targetPath = core.getInput('path')
 
   try {
     checkEvent(base, head)
@@ -144,11 +151,11 @@ const run = async () => {
     }
 
     console.log(`starting ${release} release`)
-    const lastVersion = await getLastVersion(base, initialVersion)
+    const lastVersion = await getLastVersion(base, initialVersion, targetPath)
     console.log(`got last version: ${lastVersion}`)
-    const version = await bump(lastVersion, release)
+    const version = await bump(lastVersion, release, targetPath)
     console.log(`bumped to version ${version}!`)
-    await pushBumpedVersionAndTag(version, head)
+    await pushBumpedVersionAndTag(head)
     console.log(`version ${version} pushed!`)
   } catch (e) {
     core.setFailed(e)
