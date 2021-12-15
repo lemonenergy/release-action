@@ -107,14 +107,16 @@ const bump = async (lastVersion, release, targetPath = '') => {
   const version = semver.inc(lastVersion, release)
 
   if (targetPath) {
-    console.log(targetPath)
-    await exec(`ls`)
+    console.log(`cd ${targetPath}`)
+    await exec(`ls /usr/bin`)
     await exec(`cd ${targetPath}`)
   }
 
   await exec(
     `npm version --new-version ${version} --allow-same-version -m "Release v%s"`,
   )
+
+  console.log(`${targetPath ? `${targetPath}/` : ''}package.json`)
   const file = fs.readFileSync(
     `${targetPath ? `${targetPath}/` : ''}package.json`,
   )
