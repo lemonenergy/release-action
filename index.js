@@ -127,8 +127,8 @@ const bump = async (lastVersion, release, targetPath = '') => {
 
 const configGit = async head => {
   await exec(`git fetch ${remote} ${head}:${head}`)
-  await exec(`git config --local user.email "action@github.com"`)
-  await exec(`git config --local user.name "Version Bump Action"`)
+  await exec(`git config --local user.email "rafaelfr@outlook.com"`)
+  await exec(`git config --local user.name "Rafael Franco"`)
   await exec(`git checkout ${head}`)
 }
 
