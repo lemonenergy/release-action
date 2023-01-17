@@ -7,12 +7,12 @@
   "repository": "git@github.com:lemonenergy/release-action.git",
   "author": "lemonenergy",
   "dependencies": {
-    "@actions/core": "^1.6.0",
-    "@actions/exec": "^1.1.0",
-    "@actions/github": "^5.0.0",
-    "@octokit/rest": "^18.12.0",
+    "@actions/core": "^1.10.0",
+    "@actions/exec": "^1.1.1",
+    "@actions/github": "^5.1.1",
+    "@octokit/rest": "^19.0.5",
     "recommended-bump": "^1.5.2",
-    "semver": "^7.3.5"
+    "semver": "^7.3.8"
   },
   "devDependencies": {
     "eslint": "^8.9.0"
