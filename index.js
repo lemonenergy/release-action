@@ -18,12 +18,13 @@ const checkEvent = (base, head) => {
   const { eventName, payload } = github.context
   const { pull_request } = payload
 
-  const prBase = pull_request.base.ref
-  const prHead = pull_request.head.ref
+  if (eventName !== EVENT) throw Error(`Event ${eventName} not supported. It should be ${EVENT}`)
+  const prBase = pull_request?.base?.ref
+  const prHead = pull_request?.head?.ref
 
-  if (eventName === EVENT && prBase === base && prHead === head) return
+  if ( prBase === base && prHead === head) return
 
-  throw Error('Event not supported')
+  throw Error(`base_branch "${prBase}" and head_branch "${prHead}" provided doesn't match with the pull request base "${base}" and head "${head}"!`)
 }
 
 const getLastVersion = async (base, initial = '0.0.0', targetPath = '') => {
