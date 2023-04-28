@@ -1,6 +1,6 @@
 {
   "name": "@lemonenergy/release-action",
-  "version": "2.1.3",
+  "version": "2.2.0",
   "description": "Bumps package version and creates release.",
   "main": "index.js",
   "license": "MIT",
