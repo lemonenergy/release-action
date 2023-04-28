@@ -11,6 +11,10 @@ Bumps package version and creates release.
 | github-token   | Github token with access to commit in head-branch             | true     |         |
 | initial-branch | Initial version used if base-branch doesn't have package.json | false    | 0.0.0   |
 
+## Output
+
+| version | the next version |
+
 ## Usage
 
 ```yml

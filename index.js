@@ -165,6 +165,7 @@ const run = async () => {
     console.log(`bumped to version ${version}!`)
     await pushBumpedVersionAndTag(head)
     console.log(`version ${version} pushed!`)
+    core.setOutput('version', version)
   } catch (e) {
     core.setFailed(e)
   }
