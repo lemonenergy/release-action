@@ -5,6 +5,7 @@ import { getInput, warning, setOutput, setFailed } from '@actions/core'
 import github from '@actions/github'
 import { exec } from '@actions/exec'
 import { Octokit } from '@octokit/rest'
+import { exit } from 'process'
 
 const EVENT = 'pull_request'
 
