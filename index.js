@@ -1,30 +1,21 @@
-const { readFileSync } = require('fs')
-const { exit } = require('process')
-
-const { getInput, warning, setOutput, setFailed } = require('@actions/core')
-const { exec } = require('@actions/exec')
-const github = require('@actions/github')
-const { Octokit } = require('@octokit/rest')
+const fs = require('fs')
+const semver = require('semver')
 const recommendedBump = require('recommended-bump')
-const { inc } = require('semver')
-
+const core = require('@actions/core')
+const github = require('@actions/github')
+const { exec } = require('@actions/exec')
+const { Octokit } = require('@octokit/rest')
 const EVENT = 'pull_request'
 
-const githubToken = getInput('github-token')
-const base = getInput('base-branch')
-const head = getInput('head-branch')
-const initialVersion = getInput('initial-version')
-const targetPath = getInput('path')
-
+const githubToken = core.getInput('github-token')
 const actor = process.env.GITHUB_ACTOR
 const repository = process.env.GITHUB_REPOSITORY
 const remote = `https://${actor}:${githubToken}@github.com/${repository}.git`
 
 const octokit = new Octokit({ auth: githubToken })
-const { context } = github
 
-const checkEvent = () => {
-  const { eventName, payload } = context
+const checkEvent = (base, head) => {
+  const { eventName, payload } = github.context
   const { pull_request } = payload
 
   if (eventName !== EVENT)
@@ -40,6 +31,8 @@ const checkEvent = () => {
 }
 
 const getLastVersion = async (base, initial = '0.0.0', targetPath = '') => {
+  const { context } = github
+
   try {
     const pkgFile = await octokit.repos.getContent({
       ...context.repo,
@@ -59,6 +52,7 @@ const getLastVersion = async (base, initial = '0.0.0', targetPath = '') => {
 }
 
 const validatePullRequest = async () => {
+  const { context } = github
   const { payload } = context
 
   const pull_number = payload.number
@@ -114,9 +108,10 @@ const getRelease = async () => {
 }
 
 const bump = async (lastVersion, release, targetPath = '') => {
-  const version = inc(lastVersion, release)
+  const version = semver.inc(lastVersion, release)
 
   if (targetPath) {
+    console.log(`cd ${targetPath}`)
     await exec(`ls /usr/bin`)
     await exec(`cd ${targetPath}`)
   }
@@ -125,7 +120,10 @@ const bump = async (lastVersion, release, targetPath = '') => {
     `npm version --new-version ${version} --allow-same-version -m "Release v%s"`,
   )
 
-  const file = readFileSync(`${targetPath ? `${targetPath}/` : ''}package.json`)
+  console.log(`${targetPath ? `${targetPath}/` : ''}package.json`)
+  const file = fs.readFileSync(
+    `${targetPath ? `${targetPath}/` : ''}package.json`,
+  )
   const { version: bumped } = JSON.parse(file.toString())
 
   return bumped
@@ -144,6 +142,11 @@ const pushBumpedVersionAndTag = async head => {
 }
 
 const run = async () => {
+  const base = core.getInput('base-branch')
+  const head = core.getInput('head-branch')
+  const initialVersion = core.getInput('initial-version')
+  const targetPath = core.getInput('path')
+
   try {
     checkEvent(base, head)
     await configGit(head)
@@ -151,8 +154,8 @@ const run = async () => {
     console.log('pull request validated')
     const release = await getRelease()
     if (!release) {
-      warning('no release needed!')
-      exit(0)
+      core.warning('no release needed!')
+      return
     }
 
     console.log(`starting ${release} release`)
@@ -162,9 +165,8 @@ const run = async () => {
     console.log(`bumped to version ${version}!`)
     await pushBumpedVersionAndTag(head)
     console.log(`version ${version} pushed!`)
-    setOutput('version', version)
   } catch (e) {
-    setFailed(e)
+    core.setFailed(e)
   }
 }
 

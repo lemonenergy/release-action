@@ -10301,7 +10301,7 @@ function onceStrict (fn) {
 
 const path = __nccwpck_require__(1017);
 const esmLoader = __nccwpck_require__(7363);
-const pkg = __nccwpck_require__(2463);
+const pkg = __nccwpck_require__(9628);
 
 const esmRequire = esmLoader(module);
 
@@ -11007,7 +11007,7 @@ const { MAX_LENGTH, MAX_SAFE_INTEGER } = __nccwpck_require__(2293)
 const { re, t } = __nccwpck_require__(9523)
 
 const parseOptions = __nccwpck_require__(785)
-const { compareIdentifiers } = __nccwpck_require__(5865)
+const { compareIdentifiers } = __nccwpck_require__(2463)
 class SemVer {
   constructor (version, options) {
     options = parseOptions(options)
@@ -11753,7 +11753,7 @@ module.exports = valid
 const internalRe = __nccwpck_require__(9523)
 const constants = __nccwpck_require__(2293)
 const SemVer = __nccwpck_require__(8088)
-const identifiers = __nccwpck_require__(5865)
+const identifiers = __nccwpck_require__(2463)
 const parse = __nccwpck_require__(5925)
 const valid = __nccwpck_require__(9601)
 const clean = __nccwpck_require__(8848)
@@ -11895,7 +11895,7 @@ module.exports = debug
 
 /***/ }),
 
-/***/ 5865:
+/***/ 2463:
 /***/ ((module) => {
 
 const numeric = /^[0-9]+$/
@@ -16439,14 +16439,6 @@ module.exports = require("path");
 
 /***/ }),
 
-/***/ 7282:
-/***/ ((module) => {
-
-"use strict";
-module.exports = require("process");
-
-/***/ }),
-
 /***/ 5477:
 /***/ ((module) => {
 
@@ -16519,7 +16511,7 @@ module.exports = require("zlib");
 
 /***/ }),
 
-/***/ 2463:
+/***/ 9628:
 /***/ ((module) => {
 
 "use strict";
@@ -16588,33 +16580,24 @@ module.exports = JSON.parse('[[[0,44],"disallowed_STD3_valid"],[[45,46],"valid"]
 var __webpack_exports__ = {};
 // This entry need to be wrapped in an IIFE because it need to be isolated against other modules in the chunk.
 (() => {
-const { readFileSync } = __nccwpck_require__(7147)
-const { exit } = __nccwpck_require__(7282)
-
-const { getInput, warning, setOutput, setFailed } = __nccwpck_require__(2186)
-const { exec } = __nccwpck_require__(1514)
-const github = __nccwpck_require__(5438)
-const { Octokit } = __nccwpck_require__(5375)
+const fs = __nccwpck_require__(7147)
+const semver = __nccwpck_require__(1383)
 const recommendedBump = __nccwpck_require__(6830)
-const { inc } = __nccwpck_require__(1383)
-
+const core = __nccwpck_require__(2186)
+const github = __nccwpck_require__(5438)
+const { exec } = __nccwpck_require__(1514)
+const { Octokit } = __nccwpck_require__(5375)
 const EVENT = 'pull_request'
 
-const githubToken = getInput('github-token')
-const base = getInput('base-branch')
-const head = getInput('head-branch')
-const initialVersion = getInput('initial-version')
-const targetPath = getInput('path')
-
+const githubToken = core.getInput('github-token')
 const actor = process.env.GITHUB_ACTOR
 const repository = process.env.GITHUB_REPOSITORY
 const remote = `https://${actor}:${githubToken}@github.com/${repository}.git`
 
 const octokit = new Octokit({ auth: githubToken })
-const { context } = github
 
-const checkEvent = () => {
-  const { eventName, payload } = context
+const checkEvent = (base, head) => {
+  const { eventName, payload } = github.context
   const { pull_request } = payload
 
   if (eventName !== EVENT)
@@ -16630,6 +16613,8 @@ const checkEvent = () => {
 }
 
 const getLastVersion = async (base, initial = '0.0.0', targetPath = '') => {
+  const { context } = github
+
   try {
     const pkgFile = await octokit.repos.getContent({
       ...context.repo,
@@ -16649,6 +16634,7 @@ const getLastVersion = async (base, initial = '0.0.0', targetPath = '') => {
 }
 
 const validatePullRequest = async () => {
+  const { context } = github
   const { payload } = context
 
   const pull_number = payload.number
@@ -16704,9 +16690,10 @@ const getRelease = async () => {
 }
 
 const bump = async (lastVersion, release, targetPath = '') => {
-  const version = inc(lastVersion, release)
+  const version = semver.inc(lastVersion, release)
 
   if (targetPath) {
+    console.log(`cd ${targetPath}`)
     await exec(`ls /usr/bin`)
     await exec(`cd ${targetPath}`)
   }
@@ -16715,7 +16702,10 @@ const bump = async (lastVersion, release, targetPath = '') => {
     `npm version --new-version ${version} --allow-same-version -m "Release v%s"`,
   )
 
-  const file = readFileSync(`${targetPath ? `${targetPath}/` : ''}package.json`)
+  console.log(`${targetPath ? `${targetPath}/` : ''}package.json`)
+  const file = fs.readFileSync(
+    `${targetPath ? `${targetPath}/` : ''}package.json`,
+  )
   const { version: bumped } = JSON.parse(file.toString())
 
   return bumped
@@ -16734,6 +16724,11 @@ const pushBumpedVersionAndTag = async head => {
 }
 
 const run = async () => {
+  const base = core.getInput('base-branch')
+  const head = core.getInput('head-branch')
+  const initialVersion = core.getInput('initial-version')
+  const targetPath = core.getInput('path')
+
   try {
     checkEvent(base, head)
     await configGit(head)
@@ -16741,8 +16736,8 @@ const run = async () => {
     console.log('pull request validated')
     const release = await getRelease()
     if (!release) {
-      warning('no release needed!')
-      exit(0)
+      core.warning('no release needed!')
+      return
     }
 
     console.log(`starting ${release} release`)
@@ -16752,9 +16747,8 @@ const run = async () => {
     console.log(`bumped to version ${version}!`)
     await pushBumpedVersionAndTag(head)
     console.log(`version ${version} pushed!`)
-    setOutput('version', version)
   } catch (e) {
-    setFailed(e)
+    core.setFailed(e)
   }
 }
 
