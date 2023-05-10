@@ -149,7 +149,7 @@ try {
   const release = await getRelease()
   if (!release) {
     warning('no release needed!')
-    return
+    exit(0)
   }
 
   console.log(`starting ${release} release`)
