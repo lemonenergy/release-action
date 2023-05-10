@@ -142,25 +142,27 @@ const pushBumpedVersionAndTag = async head => {
   await exec(`git push -f --tags`)
 }
 
-try {
-  checkEvent(base, head)
-  await configGit(head)
-  await validatePullRequest()
-  console.log('pull request validated')
-  const release = await getRelease()
-  if (!release) {
-    warning('no release needed!')
-    exit(0)
-  }
+;(async () => {
+  try {
+    checkEvent(base, head)
+    await configGit(head)
+    await validatePullRequest()
+    console.log('pull request validated')
+    const release = await getRelease()
+    if (!release) {
+      warning('no release needed!')
+      exit(0)
+    }
 
-  console.log(`starting ${release} release`)
-  const lastVersion = await getLastVersion(base, initialVersion, targetPath)
-  console.log(`got last version: ${lastVersion}`)
-  const version = await bump(lastVersion, release, targetPath)
-  console.log(`bumped to version ${version}!`)
-  await pushBumpedVersionAndTag(head)
-  console.log(`version ${version} pushed!`)
-  setOutput('version', version)
-} catch (e) {
-  setFailed(e)
-}
+    console.log(`starting ${release} release`)
+    const lastVersion = await getLastVersion(base, initialVersion, targetPath)
+    console.log(`got last version: ${lastVersion}`)
+    const version = await bump(lastVersion, release, targetPath)
+    console.log(`bumped to version ${version}!`)
+    await pushBumpedVersionAndTag(head)
+    console.log(`version ${version} pushed!`)
+    setOutput('version', version)
+  } catch (e) {
+    setFailed(e)
+  }
+})()

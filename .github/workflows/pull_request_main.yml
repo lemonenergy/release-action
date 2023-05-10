@@ -15,6 +15,6 @@ jobs:
         with:
           node-version: 18
 
-      - uses: lemonenergy/release-action@main
+      - uses: lemonenergy/release-action@develop
         with:
           github-token: ${{secrets.GITHUB_TOKEN}}
