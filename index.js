@@ -1,11 +1,12 @@
 import { readFileSync } from 'fs'
-import { inc } from 'semver'
-import recommendedBump from 'recommended-bump'
-import { getInput, warning, setOutput, setFailed } from '@actions/core'
-import github from '@actions/github'
-import { exec } from '@actions/exec'
-import { Octokit } from '@octokit/rest'
 import { exit } from 'process'
+
+import { getInput, warning, setOutput, setFailed } from '@actions/core'
+import { exec } from '@actions/exec'
+import github from '@actions/github'
+import { Octokit } from '@octokit/rest'
+import recommendedBump from 'recommended-bump'
+import { inc } from 'semver'
 
 const EVENT = 'pull_request'
 
