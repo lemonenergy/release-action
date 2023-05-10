@@ -1,0 +1,16 @@
+name: Push to main
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - run: |
+          major=$(cat ./package.json | jq '.version' | tr -d '"' | cut -d '.' -f 1)
+          git push origin v$major
