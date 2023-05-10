@@ -6,7 +6,7 @@ on:
       - main
 
 jobs:
-  bump-version:
+  release:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -17,5 +17,4 @@ jobs:
 
       - uses: lemonenergy/release-action@main
         with:
-          base-branch: main
           github-token: ${{secrets.GITHUB_TOKEN}}
