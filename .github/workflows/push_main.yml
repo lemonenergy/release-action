@@ -15,5 +15,5 @@ jobs:
           major=$(cat ./package.json | jq '.version' | tr -d '"' | cut -d '.' -f 1)
           git config --local user.email "action@github.com"
           git config --local user.name "Version Bump Action"
-          git tag -a v$major
+          git tag -a v$major -m "Sync major tag"
           git push -f
