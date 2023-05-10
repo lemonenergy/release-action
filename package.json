@@ -6,7 +6,6 @@
   "license": "MIT",
   "repository": "git@github.com:lemonenergy/release-action.git",
   "author": "lemonenergy",
-  "type": "module",
   "scripts": {
     "build": "esbuild index.js --outdir=dist --platform=node --format=cjs --bundle",
     "prepare": "husky install"
