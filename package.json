@@ -8,7 +8,7 @@
   "author": "lemonenergy",
   "type": "module",
   "scripts": {
-    "build": "esbuild index.js --outdir=dist --platform=node --format=esm",
+    "build": "esbuild index.js --outdir=dist --platform=node --format=esm --bundle",
     "prepare": "husky install"
   },
   "dependencies": {
