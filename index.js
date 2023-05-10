@@ -1,12 +1,12 @@
-import { readFileSync } from 'fs'
-import { exit } from 'process'
+const { readFileSync } = require('fs')
+const { exit } = require('process')
 
-import { getInput, warning, setOutput, setFailed } from '@actions/core'
-import { exec } from '@actions/exec'
-import github from '@actions/github'
-import { Octokit } from '@octokit/rest'
-import recommendedBump from 'recommended-bump'
-import { inc } from 'semver'
+const { getInput, warning, setOutput, setFailed } = require('@actions/core')
+const { exec } = require('@actions/exec')
+const github = require('@actions/github')
+const { Octokit } = require('@octokit/rest')
+const recommendedBump = require('recommended-bump')
+const { inc } = require('semver')
 
 const EVENT = 'pull_request'
 
@@ -143,7 +143,7 @@ const pushBumpedVersionAndTag = async head => {
   await exec(`git push -f --tags`)
 }
 
-;(async () => {
+const run = async () => {
   try {
     checkEvent(base, head)
     await configGit(head)
@@ -166,4 +166,6 @@ const pushBumpedVersionAndTag = async head => {
   } catch (e) {
     setFailed(e)
   }
-})()
+}
+
+run()

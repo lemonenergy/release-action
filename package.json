@@ -7,7 +7,7 @@
   "repository": "git@github.com:lemonenergy/release-action.git",
   "author": "lemonenergy",
   "scripts": {
-    "build": "esbuild index.js --outdir=dist --platform=node --format=cjs --bundle",
+    "build": "ncc build index.js -o dist",
     "prepare": "husky install"
   },
   "dependencies": {
@@ -19,7 +19,7 @@
     "semver": "^7.5.0"
   },
   "devDependencies": {
-    "esbuild": "^0.17.18",
+    "@vercel/ncc": "^0.36.1",
     "eslint": "^8.39.0",
     "husky": "^8.0.0"
   }
