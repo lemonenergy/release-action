@@ -1,11 +1,16 @@
 {
   "name": "@lemonenergy/release-action",
   "version": "2.2.0",
-  "description": "Bumps package version and creates release.",
-  "main": "index.js",
+  "description": "Bumps package version and creates release",
+  "main": "dist/index.js",
   "license": "MIT",
   "repository": "git@github.com:lemonenergy/release-action.git",
   "author": "lemonenergy",
+  "type": "module",
+  "scripts": {
+    "build": "esbuild index.js --outdir=dist --platform=node --bundle --minify",
+    "prepare": "husky install"
+  },
   "dependencies": {
     "@actions/core": "^1.10.0",
     "@actions/exec": "^1.1.1",
@@ -15,6 +20,8 @@
     "semver": "^7.5.0"
   },
   "devDependencies": {
-    "eslint": "^8.39.0"
+    "esbuild": "^0.17.18",
+    "eslint": "^8.39.0",
+    "husky": "^8.0.0"
   }
 }
