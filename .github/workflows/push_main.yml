@@ -13,4 +13,4 @@ jobs:
 
       - run: |
           major=$(cat ./package.json | jq '.version' | tr -d '"' | cut -d '.' -f 1)
-          git push origin v$major
+          git push origin main v$major
