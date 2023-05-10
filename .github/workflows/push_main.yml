@@ -13,5 +13,7 @@ jobs:
 
       - run: |
           major=$(cat ./package.json | jq '.version' | tr -d '"' | cut -d '.' -f 1)
+          git config --local user.email "action@github.com"
+          git config --local user.name "Version Bump Action"
           git tag -a v$major
-          git push origin v$major
+          git push -f
