@@ -15,7 +15,18 @@ jobs:
         with:
           node-version: 18
 
-      - uses: lemonenergy/release-action@main
+      - uses: lemonenergy/release-action@develop
+        id: release-commit
         with:
-          base-branch: main
           github-token: ${{secrets.GITHUB_TOKEN}}
+
+      - uses: actions/github-script@v6
+        with:
+          script: |
+            if(!"${{steps.release-commit.outputs.version}}") return
+            github.rest.pulls.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.issue.number,
+              title: "v${{steps.release-commit.outputs.version}}"
+            })
