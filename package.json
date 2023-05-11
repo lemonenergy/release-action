@@ -1,6 +1,6 @@
 {
   "name": "@lemonenergy/release-action",
-  "version": "2.1.3",
+  "version": "2.2.0",
   "description": "Bumps package version and creates release.",
   "main": "index.js",
   "license": "MIT",
@@ -12,9 +12,9 @@
     "@actions/github": "^5.1.1",
     "@octokit/rest": "^19.0.7",
     "recommended-bump": "^1.5.2",
-    "semver": "^7.4.0"
+    "semver": "^7.5.0"
   },
   "devDependencies": {
-    "eslint": "^8.38.0"
+    "eslint": "^8.40.0"
   }
 }
