@@ -141,6 +141,18 @@ const pushBumpedVersionAndTag = async head => {
   await exec(`git push -f --tags`)
 }
 
+const updatePRTitleWithNextVersion = async version => {
+  const { context } = github
+  const { payload } = context
+  const pull_number = payload.number
+
+  return octokit.pulls.update({
+    ...context.repo,
+    pull_number,
+    title: `v${version}`,
+  })
+}
+
 const run = async () => {
   const base = core.getInput('base-branch')
   const head = core.getInput('head-branch')
@@ -165,6 +177,8 @@ const run = async () => {
     console.log(`bumped to version ${version}!`)
     await pushBumpedVersionAndTag(head)
     console.log(`version ${version} pushed!`)
+    await updatePRTitleWithNextVersion(version)
+    console.log(`PR title updated with v${version}`)
     core.setOutput('version', version)
   } catch (e) {
     core.setFailed(e)
