@@ -18,13 +18,16 @@ const checkEvent = (base, head) => {
   const { eventName, payload } = github.context
   const { pull_request } = payload
 
-  if (eventName !== EVENT) throw Error(`Event ${eventName} not supported. It should be ${EVENT}`)
+  if (eventName !== EVENT)
+    throw Error(`Event ${eventName} not supported. It should be ${EVENT}`)
   const prBase = pull_request?.base?.ref
   const prHead = pull_request?.head?.ref
 
-  if ( prBase === base && prHead === head) return
+  if (prBase === base && prHead === head) return
 
-  throw Error(`base_branch "${prBase}" and head_branch "${prHead}" provided doesn't match with the pull request base "${base}" and head "${head}"!`)
+  throw Error(
+    `base_branch "${prBase}" and head_branch "${prHead}" provided doesn't match with the pull request base "${base}" and head "${head}"!`,
+  )
 }
 
 const getLastVersion = async (base, initial = '0.0.0', targetPath = '') => {
@@ -128,12 +131,26 @@ const bump = async (lastVersion, release, targetPath = '') => {
 
 const configGit = async head => {
   await exec(`git fetch ${remote} ${head}:${head}`)
+  await exec(`git config --local user.email "action@github.com"`)
+  await exec(`git config --local user.name "Version Bump Action"`)
   await exec(`git checkout ${head}`)
 }
 
 const pushBumpedVersionAndTag = async head => {
   await exec(`git push "${remote}" HEAD:${head}`)
   await exec(`git push -f --tags`)
+}
+
+const updatePRTitleWithNextVersion = async version => {
+  const { context } = github
+  const { payload } = context
+  const pull_number = payload.number
+
+  return octokit.pulls.update({
+    ...context.repo,
+    pull_number,
+    title: `v${version}`,
+  })
 }
 
 const run = async () => {
@@ -160,6 +177,9 @@ const run = async () => {
     console.log(`bumped to version ${version}!`)
     await pushBumpedVersionAndTag(head)
     console.log(`version ${version} pushed!`)
+    await updatePRTitleWithNextVersion(version)
+    console.log(`PR title updated with v${version}`)
+    core.setOutput('version', version)
   } catch (e) {
     core.setFailed(e)
   }

@@ -24,6 +24,10 @@ inputs:
     description: 'Path where the target package.json is located'
     default: ''
 
+outputs:
+  version:
+    description: 'The next version'
+
 runs:
   using: 'node20'
   main: 'index.js'
