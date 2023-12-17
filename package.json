@@ -1,20 +1,24 @@
 {
   "name": "@lemonenergy/release-action",
-  "version": "2.2.0",
+  "version": "2.3.0",
   "description": "Bumps package version and creates release.",
   "main": "index.js",
   "license": "MIT",
   "repository": "git@github.com:lemonenergy/release-action.git",
   "author": "lemonenergy",
   "dependencies": {
-    "@actions/core": "^1.10.0",
+    "@actions/core": "^1.10.1",
     "@actions/exec": "^1.1.1",
-    "@actions/github": "^5.1.1",
-    "@octokit/rest": "^19.0.7",
+    "@actions/github": "^6.0.0",
+    "@octokit/rest": "^20.0.2",
     "recommended-bump": "^1.5.2",
-    "semver": "^7.5.0"
+    "semver": "^7.5.4"
   },
   "devDependencies": {
     "eslint": "^8.40.0"
+  },
+  "engines": {
+    "node": "^20",
+    "npm": "^10"
   }
 }
