@@ -1,4 +1,5 @@
 const fs = require('fs')
+const crypto = require('crypto')
 const semver = require('semver')
 const recommendedBump = require('recommended-bump')
 const core = require('@actions/core')
@@ -7,12 +8,55 @@ const { exec } = require('@actions/exec')
 const { Octokit } = require('@octokit/rest')
 const EVENT = 'pull_request'
 
-const githubToken = core.getInput('github-token')
 const actor = process.env.GITHUB_ACTOR
 const repository = process.env.GITHUB_REPOSITORY
-const remote = `https://${actor}:${githubToken}@github.com/${repository}.git`
 
-const octokit = new Octokit({ auth: githubToken })
+let remote
+let octokit
+
+const createAppJWT = (appId, privateKey) => {
+  const now = Math.floor(Date.now() / 1000)
+  const header = Buffer.from(JSON.stringify({ alg: 'RS256', typ: 'JWT' })).toString('base64url')
+  const payload = Buffer.from(JSON.stringify({ iat: now - 60, exp: now + 600, iss: String(appId) })).toString('base64url')
+  const data = `${header}.${payload}`
+  const signature = crypto.sign('RSA-SHA256', Buffer.from(data), privateKey)
+  return `${data}.${signature.toString('base64url')}`
+}
+
+const resolveToken = async () => {
+  const appId = core.getInput('github-app-id')
+  if (!appId) return core.getInput('github-token')
+
+  const privateKey = core.getInput('github-token')
+  const jwt = createAppJWT(appId, privateKey)
+  const [owner, repo] = repository.split('/')
+
+  const headers = {
+    Authorization: `Bearer ${jwt}`,
+    Accept: 'application/vnd.github+json',
+    'User-Agent': 'lemonenergy/release-action',
+    'X-GitHub-Api-Version': '2022-11-28',
+  }
+
+  const installResponse = await fetch(
+    `https://api.github.com/repos/${owner}/${repo}/installation`,
+    { headers },
+  )
+  if (!installResponse.ok)
+    throw new Error(`Failed to get App installation: ${installResponse.status} ${await installResponse.text()}`)
+
+  const { id: installationId } = await installResponse.json()
+
+  const tokenResponse = await fetch(
+    `https://api.github.com/app/installations/${installationId}/access_tokens`,
+    { method: 'POST', headers },
+  )
+  if (!tokenResponse.ok)
+    throw new Error(`Failed to get installation token: ${tokenResponse.status} ${await tokenResponse.text()}`)
+
+  const { token } = await tokenResponse.json()
+  return token
+}
 
 const checkEvent = (base, head) => {
   const { eventName, payload } = github.context
@@ -107,17 +151,15 @@ const getRelease = async () => {
   return release
 }
 
-const bump = async (lastVersion, release, targetPath = '') => {
+const bump = async (lastVersion, release, targetPath = '', skipCi = false) => {
   const version = semver.inc(lastVersion, release)
 
-  if (targetPath) {
-    console.log(`cd ${targetPath}`)
-    await exec(`ls /usr/bin`)
-    await exec(`cd ${targetPath}`)
-  }
-
+  const message = skipCi ? 'Release v%s [skip ci]' : 'Release v%s'
+  const execOptions = targetPath ? { cwd: targetPath } : {}
   await exec(
-    `npm version --new-version ${version} --allow-same-version -m "Release v%s"`,
+    `npm version --new-version ${version} --allow-same-version -m "${message}"`,
+    [],
+    execOptions,
   )
 
   console.log(`${targetPath ? `${targetPath}/` : ''}package.json`)
@@ -138,7 +180,7 @@ const configGit = async head => {
 
 const pushBumpedVersionAndTag = async head => {
   await exec(`git push "${remote}" HEAD:${head}`)
-  await exec(`git push -f --tags`)
+  await exec(`git push -f --tags "${remote}"`)
 }
 
 const updatePRTitleWithNextVersion = async version => {
@@ -158,8 +200,13 @@ const run = async () => {
   const head = core.getInput('head-branch')
   const initialVersion = core.getInput('initial-version')
   const targetPath = core.getInput('path')
+  const skipCi = core.getBooleanInput('skip-ci')
 
   try {
+    const token = await resolveToken()
+    remote = `https://${actor}:${token}@github.com/${repository}.git`
+    octokit = new Octokit({ auth: token })
+
     checkEvent(base, head)
     await configGit(head)
     await validatePullRequest()
@@ -173,7 +220,7 @@ const run = async () => {
     console.log(`starting ${release} release`)
     const lastVersion = await getLastVersion(base, initialVersion, targetPath)
     console.log(`got last version: ${lastVersion}`)
-    const version = await bump(lastVersion, release, targetPath)
+    const version = await bump(lastVersion, release, targetPath, skipCi)
     console.log(`bumped to version ${version}!`)
     await pushBumpedVersionAndTag(head)
     console.log(`version ${version} pushed!`)

@@ -13,8 +13,16 @@ inputs:
     default: 'develop'
 
   github-token:
-    description: 'GitHub token with access to commit in head-branch'
+    description: 'GitHub token (PAT) or GitHub App private key when github-app-id is provided'
     required: true
+
+  github-app-id:
+    description: 'GitHub App ID. When provided, github-token is treated as the App private key and a short-lived installation token is generated automatically'
+    default: ''
+
+  skip-ci:
+    description: 'Append [skip ci] to the version bump commit message to prevent triggering new workflow runs'
+    default: 'false'
 
   initial-version:
     description: "Initial version used if base-branch doesn't have package.json"
@@ -29,5 +37,5 @@ outputs:
     description: 'The next version'
 
 runs:
-  using: 'node20'
+  using: 'node24'
   main: 'index.js'
